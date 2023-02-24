@@ -60,9 +60,12 @@ class DatabaseHelper {
 
   Future<List<User>> retrieveUsers() async {
     Database? db = await database;
-    queryResult = await db!.query('users');
-    return queryResult.toList();
-    print(queryResult);
+    List<Map> list = await db!.rawQuery("SELECT * FROM users");
+    List<User> user = [];
+    for (int i = 0; i < list.length; i++) {
+      user.add(User(name: list[i]['name'], age: list[i]['age'], email: list[i]['email']));
+    }
+    return user;
   }
 
   Future<void> deleteUser(int id) async {

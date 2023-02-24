@@ -66,7 +66,27 @@ class _HomePageState extends State<HomePage> {
                   ]))),
               Expanded(
                 flex: 1,
-                child: SafeArea(child: userWidget()),
+                child: FutureBuilder<List<User>>(
+                  future: dbHelper.retrieveUsers(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      print(snapshot.data!.length);
+                      return ListView.builder(
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(snapshot.data![index].name),
+                              subtitle: Text(snapshot.data![index].email),
+                            );
+                          });
+                    } else if (snapshot.hasError) {
+                      print("Error :: ${snapshot.error}");
+                      throw Error();
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
               )
             ],
           )),
@@ -80,7 +100,7 @@ class _HomePageState extends State<HomePage> {
     String email = emailController.text;
     String name = nameController.text;
     String age = ageController.text;
-    User user = User(name: name, age: int.parse(age), email: email);
+    User user = User(name: name, age: age, email: email);
     await addUser(user);
 
     // if (!isEditing) {
@@ -119,8 +139,28 @@ class _HomePageState extends State<HomePage> {
           print(snapshot.data!.length);
           return ListView.builder(
               itemCount: snapshot.data!.length,
-              itemBuilder: (context, position) {
-                return Dismissible(
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(snapshot.data![index].name),
+                  subtitle: Text(snapshot.data![index].email),
+                );
+              });
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  void populateFields(User user) {
+    _user = user;
+    nameController.text = _user.name;
+    ageController.text = _user.age.toString();
+    emailController.text = _user.email;
+    isEditing = true;
+  }
+}
+/*Dismissible(
                     direction: DismissDirection.endToStart,
                     background: Container(
                       color: Colors.red,
@@ -188,20 +228,4 @@ class _HomePageState extends State<HomePage> {
                           )
                         ],
                       ),
-                    ));
-              });
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
-    );
-  }
-
-  void populateFields(User user) {
-    _user = user;
-    nameController.text = _user.name;
-    ageController.text = _user.age.toString();
-    emailController.text = _user.email;
-    isEditing = true;
-  }
-}
+                    ))*/
